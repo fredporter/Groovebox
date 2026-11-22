@@ -2,7 +2,7 @@
   "name": "groovebox",
   "private": true,
   "version": "0.1.0-dev",
-  "description": "Groovebox \u2014 Vue 3 + PicoCSS + USX tokens + uCore snackbar/MCP alignment",
+  "description": "Groovebox — Vue 3 + PicoCSS + USX tokens + uCore snackbar/MCP alignment",
   "type": "module",
   "workspaces": [
     "groovebox-vue",
@@ -12,6 +12,9 @@
     "dev": "cd groovebox-vue && vite",
     "build": "cd groovebox-vue && vue-tsc && vite build",
     "preview": "cd groovebox-vue && vite preview"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0"
   },
   "engines": {
     "node": ">=18"
