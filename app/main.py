@@ -157,42 +157,6 @@ def songscribe_runtime_stop_route(request: Request, mode: str = "local") -> dict
     return songscribe_runtime_stop(REPO_ROOT, mode=mode)
 
 
-# ── Songscribe Proxy (for in-tab transcription) ───────────────────
-
-
-@app.api_route("/api/songscribe/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD"])
-async def songscribe_proxy(request: Request, path: str):
-    """Proxy requests to the Songscribe backend (127.0.0.1:3000)."""
-    target_url = f"http://127.0.0.1:3000/{path}"
-    query = str(request.query_params)
-    if query:
-        target_url += f"?{query}"
-
-    body = await request.body()
-    headers = dict(request.headers)
-    # Remove hop-by-hop headers
-    for hop in ("host", "connection", "content-length", "transfer-encoding"):
-        headers.pop(hop, None)
-
-    try:
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            resp = await client.request(
-                method=request.method,
-                url=target_url,
-                headers=headers,
-                content=body,
-            )
-        return JSONResponse(
-            content=resp.json() if resp.headers.get("content-type", "").startswith("application/json") else resp.text,
-            status_code=resp.status_code,
-            headers=dict(resp.headers),
-        )
-    except httpx.ConnectError:
-        raise HTTPException(status_code=502, detail="Songscribe backend not reachable on 127.0.0.1:3000")
-    except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Songscribe backend timed out")
-
-
 # ── Workspaces ────────────────────────────────────────────────────
 
 
@@ -415,6 +379,47 @@ def songscribe_bridge(payload: MarkdownPayload) -> dict[str, object]:
         "pattern": compiled,
         "playback": build_playback_preview(compiled),
     }
+
+
+# ── Songscribe Proxy (for in-tab transcription) ───────────────────
+#
+# Registered only after every local /api/songscribe/* route. FastAPI matches in
+# registration order, so a catch-all declared earlier swallows /status, /bridge
+# and the Docker/runtime endpoints, then tries to proxy them and answers 502 when
+# the optional backend is absent.
+
+
+@app.api_route("/api/songscribe/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD"])
+async def songscribe_proxy(request: Request, path: str):
+    """Proxy requests to the Songscribe backend (127.0.0.1:3000)."""
+    target_url = f"http://127.0.0.1:3000/{path}"
+    query = str(request.query_params)
+    if query:
+        target_url += f"?{query}"
+
+    body = await request.body()
+    headers = dict(request.headers)
+    # Remove hop-by-hop headers
+    for hop in ("host", "connection", "content-length", "transfer-encoding"):
+        headers.pop(hop, None)
+
+    try:
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            resp = await client.request(
+                method=request.method,
+                url=target_url,
+                headers=headers,
+                content=body,
+            )
+        return JSONResponse(
+            content=resp.json() if resp.headers.get("content-type", "").startswith("application/json") else resp.text,
+            status_code=resp.status_code,
+            headers=dict(resp.headers),
+        )
+    except httpx.ConnectError:
+        raise HTTPException(status_code=502, detail="Songscribe backend not reachable on 127.0.0.1:3000")
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Songscribe backend timed out")
 
 
 # ── Sessions ──────────────────────────────────────────────────────
