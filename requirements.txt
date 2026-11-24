@@ -1,0 +1,7 @@
+# Groovebox API and validation dependencies.
+# Used by scripts/run-groovebox-checks.sh in CI and when a local environment is
+# missing them; the local development environment already provides these.
+fastapi>=0.115,<1.0
+httpx>=0.27,<1.0
+pydantic>=2.6,<3.0
+pytest>=8.0,<10.0

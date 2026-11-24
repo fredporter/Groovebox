@@ -14,7 +14,8 @@
   },
   "peerDependenciesMeta": {
     "@udos/usx-tokens": {
-      "optional": false
+      "optional": true
     }
-  }
+  },
+  "//": "USX is optional here on purpose: Groovebox imports its token CSS from src/styles, so the package never resolves @udos/usx-tokens at install time and CI stays offline-friendly."
 }
