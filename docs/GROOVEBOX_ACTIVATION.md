@@ -43,6 +43,23 @@ pattern records, and validates the seeded Songscribe bridge lane.
 
 Full operator checklist: [product-checklist.md](product-checklist.md).
 
+## GitHub Actions
+
+The family reusable workflows in `fredporter/uDOS-dev` were retired when that
+repository was deleted. The `family-policy-check.yml` caller then failed to load
+and reported nothing, so the suite looked quiet instead of failed. The remaining
+workflows are self-contained:
+
+| Workflow | Triggers | Entrypoint |
+| --- | --- | --- |
+| `validate.yml` | push `main`; pull request `main`; dispatch | `scripts/run-groovebox-checks.sh` |
+| `family-policy-check.yml` | push `main`; pull request `main`; dispatch | `scripts/check-family-policy.py` |
+
+`promote.yml` and `release.yml` were pure calls into that retired repository and
+were removed with it: Groovebox has no `develop` train and no publishing target
+(`package.json` is private). Reinstate them as local jobs that call repository
+scripts once a promotion branch or a distribution target exists.
+
 ## Boundary Rule
 
 Groovebox does not own shell command dispatch, provider registration, network
