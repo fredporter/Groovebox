@@ -18,3 +18,5 @@ containers/songscribe/repo/
 containers/songscribe/songscribe-api/
 containers/songscribe/models/
 .groovebox-local/
+# Local session runtime output (event spool, compiled and exported bundles)
+sessions/
